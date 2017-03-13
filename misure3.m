@@ -127,6 +127,9 @@ for object = 1:length(stats)
             end
         end
     end
+    if x2==0
+        x2=x1;
+    end
     
 %     xe = x2 - ( (x2 - x1) / 2 ) + dec;
     xe = max(x1,x2);
@@ -152,6 +155,9 @@ for object = 1:length(stats)
                 y2=y;
             end
         end
+    end
+    if y2==0
+        y2=y1;
     end
     
     xf = xf + dec;
@@ -179,6 +185,9 @@ for object = 1:length(stats)
             end
         end
     end
+    if x2==0
+        x2=x1;
+    end
     
 %     xg = x2 - ( (x2 - x1) / 2 ) + dec;
     xg = min(x1,x2);
@@ -204,6 +213,9 @@ for object = 1:length(stats)
                 y2=y;
             end
         end
+    end
+    if y2==0
+        y2=y1;
     end
     
     xh = xh - dec;

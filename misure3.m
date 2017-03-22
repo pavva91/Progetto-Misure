@@ -240,7 +240,7 @@ for object = 1:length(stats)
 %     polygon = [e(1,1) e(1,2) f(1,1) f(1,2) g(1,1) g(1,2) h(1,1) h(1,2)];
     polygon = [e1(1,1) e1(1,2) e2(1,1) e2(1,2) f1(1,1) f1(1,2) f2(1,1) f2(1,2) g2(1,1) g2(1,2) g1(1,1) g1(1,2)  h2(1,1) h2(1,2) h1(1,1) h1(1,2)];
     result = insertShape(result, 'Polygon', polygon, 'Color', 'green', 'LineWidth', 2);
-%     result = insertShape(result, 'Rectangle', bb, 'Color', 'green', 'LineWidth', 2);
+%     result2 = insertShape(result, 'Rectangle', bb, 'Color', 'blue', 'LineWidth', 2);
     % insertText(image, position, pos_value, characteristics, charact_value)
     % default -> BoxColor:yellow - FontColor: black
     result = insertText(result, [bb(1,1)-15 bb(1,2)], object, 'BoxOpacity', 1, 'FontSize', 10, 'BoxColor', 'green');
@@ -329,6 +329,61 @@ for object = 1:length(stats)
     % *** come alternativa potrei tracciare la linea tra il lato più lungo
     % e il centroid dell'oggetto
     result = insertShape(result, 'Line', [vm1 vm2], 'Color', 'white', 'LineWidth', 2);
+    
+    % Line Valerio:
+    switch lmax(1) % sistemare differenze per unificare segno angolo alpha
+        case 1 % yl per ora INUTILE
+            xl = e1(1,1) - e2(1,1);
+            yl = e1(1,2) - e2(1,2);
+        case 2
+            xl = e2(1,1) - f1(1,1);
+            yl = e2(1,2) - f1(1,2);
+        case 3
+            xl = f1(1,1) - f2(1,1);
+            yl = f1(1,2) - f2(1,2);
+        case 4
+            xl = f2(1,1) - g2(1,1);
+            yl = f2(1,2) - g2(1,2);
+        case 5
+            xl = g2(1,1) - g1(1,1);
+            yl = g2(1,2) - g1(1,2);
+        case 6
+            xl = g1(1,1) - h2(1,1);
+            yl = g1(1,2) - h2(1,2);
+        case 7
+            xl = h2(1,1) - h1(1,1);
+            yl = h2(1,2) - h1(1,2);
+        case 8
+            xl = h1(1,1) - e1(1,1);
+            yl = h1(1,2) - e1(1,2);
+    end
+    
+    % orientazione
+    cosAlpha = -xl/lmax(2);
+    alpha = acosd(cosAlpha);
+    
+    % print alpha in degrees
+    result = insertText(result, [bb(1,1)-15 bb(1,2)-30], alpha, 'BoxOpacity', 1, 'FontSize', 10, 'BoxColor', 'green');
+    
+    % creo punti per "mirino"
+    x1 = bc(1,1)-lmax(2)/2*cosd(alpha);
+    y1 = bc(1,2)-lmax(2)/2*sind(alpha);
+    linepoint1 = [x1 y1];
+    x2 = bc(1,1)+lmax(2)/2*cosd(alpha);
+    y2 = bc(1,2)+lmax(2)/2*sind(alpha);
+    linepoint2 = [x2 y2];
+    x3 = bc(1,1)-lmax(2)/4*cosd(alpha+90);
+    y3 = bc(1,2)-lmax(2)/4*sind(alpha+90);
+    linepoint3 = [x3 y3];
+    x4 = bc(1,1)+lmax(2)/4*cosd(alpha+90);
+    y4 = bc(1,2)+lmax(2)/4*sind(alpha+90);
+    linepoint4 = [x4 y4];
+    
+    % print orientation cross
+    result = insertShape(result, 'Line', [linepoint1 bc linepoint2], 'Color', 'red', 'LineWidth', 2);
+    result = insertShape(result, 'Line', [linepoint3 bc linepoint4], 'Color', 'red', 'LineWidth', 2);
+    
+    % Fine Valerio
 end
 
 % Match the objects

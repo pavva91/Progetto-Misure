@@ -404,11 +404,8 @@ for object = 1:length(stats)
     % SOLUZIONE: aggiungere condizione su rapporto dei lati (if annidato)
     if or((lmax(1)+2) == lmax2(1),(lmax(1)-2) == lmax2(1))
         if LRAP(object)<50
-            if or(or(and(lmax(1)==6,lmax2(1)==4),and(lmax(1)==4,lmax2(1)==6)),or(and(lmax(1)==8,lmax2(1)==2),and(lmax(1)==2,lmax2(1)==8))) % se i lati max adiacenti sono il 4/6 o 2/8 rifaso di 90
-                alpha = alpha + beta + 90;
-            else
-                alpha = alpha + beta;
-            end
+            if or(and(lmax(1)==6,lmax2(1)==4),and(lmax(1)==4,lmax2(1)==6),and(lmax(1)==8,lmax2(1)==2)and(lmax(1)==2,lmax2(1)==8)
+        alpha = alpha + beta;
         end
     end
     

@@ -256,7 +256,8 @@ for object = 1:length(stats)
     L(object,8) = pdist([h1;e1],'euclidean');
     LRAP(object,1) = max(L(object,:)) / min(L(object,:));
     
-    % riformulazione LRAP: tolgo i 4 lati piu corti dal min
+    % riformulazione LRAP: tolgo i 4 lati piu corti dal min per avere i
+    % "veri" 4 lati
     % B = sort(L,2);
     % LRAP(object,1) = max(L(object,:)) / B(object,5);
     
@@ -336,7 +337,7 @@ for object = 1:length(stats)
     result = insertShape(result, 'Line', [vm1 vm2], 'Color', 'white', 'LineWidth', 2);
     
     % Line Valerio:
-    switch lmax(1) 
+    switch lmax(1) % così definiti trovo l'angolo orientato in senso orario
         case 1 % yl per ora INUTILE
             xl = e1(1,1) - e2(1,1);
             yl = e1(1,2) - e2(1,2);
@@ -359,16 +360,16 @@ for object = 1:length(stats)
             xl = h2(1,1) - h1(1,1);
             yl = h2(1,2) - h1(1,2);
         case 8
-            xl = h1(1,1) - e1(1,1);
-            yl = h1(1,2) - e1(1,2);
+            xl = -(e1(1,1) - h1(1,1));
+            yl = e1(1,2) - h1(1,2);
     end
     
-    % orientazione lmax
+    % orientazione lmax, alpha
     cosAlpha = xl/lmax(2);
     alpha = acosd(cosAlpha);
     
     
-    switch lmax2(1) 
+    switch lmax2(1) % trovo angolo orientato in senso orario
         case 1 % yl per ora INUTILE
             xl = e1(1,1) - e2(1,1);
             yl = e1(1,2) - e2(1,2);
@@ -391,44 +392,96 @@ for object = 1:length(stats)
             xl = h2(1,1) - h1(1,1);
             yl = h2(1,2) - h1(1,2);
         case 8
-            xl = h1(1,1) - e1(1,1);
-            yl = h1(1,2) - e1(1,2);
+            xl = -(e1(1,1) - h1(1,1));
+            yl = e1(1,2) - h1(1,2);
     end
     
-    % orientazione lmax2
+    % orientazione lmax2, beta
     cosBeta = xl/lmax2(2);
     beta = acosd(cosBeta);
     
-    % calcolo angolazione caso "chiave"
-    % NB: così rovina orientazione "scatola"
-    % SOLUZIONE: aggiungere condizione su rapporto dei lati (if annidato)
-    if or((lmax(1)+2) == lmax2(1),(lmax(1)-2) == lmax2(1))
-        if LRAP(object)<50
-            if or(or(and(lmax(1)==6,lmax2(1)==4),and(lmax(1)==4,lmax2(1)==6)),or(and(lmax(1)==8,lmax2(1)==2),and(lmax(1)==2,lmax2(1)==8))) % se i lati max adiacenti sono il 4/6 o 2/8 rifaso di 90
-                alpha = alpha + beta + 90;
-            else
-                alpha = alpha + beta;
-            end
+    % calcolo DELTA dei due lati lunghi
+    deltaAlphaBeta = abs(abs(alpha)-abs(beta));
+    maxAngle = max([alpha beta]);
+    if or(or(and(lmax(1)==6,lmax2(1)==8),and(lmax(1)==8,lmax2(1)==6)),or(and(lmax(1)==4,lmax2(1)==2),and(lmax(1)==2,lmax2(1)==4)))
+        if maxAngle==alpha
+            omega = 180 - alpha;
+            deltaAlphaBeta = abs(abs(omega) + abs(beta));
         end
+        if maxAngle==beta
+            omega = 180 - beta;
+            deltaAlphaBeta = abs(abs(alpha) + abs(omega));
+        end     
+    end
+    if or(or(or(and(lmax(1)==8,lmax2(1)==4),and(lmax(1)==4,lmax2(1)==8)),or(and(lmax(1)==6,lmax2(1)==4),and(lmax(1)==4,lmax2(1)==6))),or(and(lmax(1)==8,lmax2(1)==2),and(lmax(1)==2,lmax2(1)==8))) % se i lati max adiacenti sono il 4/6 o 2/8 rifaso di 90
+            deltaAlphaBeta = abs(abs(alpha)-abs(beta));
     end
     
+    % trovo orientazione ERRATA
+%     if and(deltaAlphaBeta<45,deltaAlphaBeta>10)
+%         if or(or(or(and(lmax(1)==8,lmax2(1)==6),and(lmax(1)==2,lmax2(1)==6)),or(and(lmax(1)==2,lmax2(1)==8),and(lmax(1)==4,lmax(1)==8))),or(and(lmax(1)==6,lmax2(1)==4),and(lmax(1)==4,lmax2(1)==2)))
+%             
+%             orientation = (alpha+beta)/2;
+%             if maxAngle==alpha
+%                 orientation = alpha + deltaAlphaBeta/2;
+%             else
+%                 orientation = beta + deltaAlphaBeta/2;
+%             end
+%         else
+%             if maxAngle==alpha
+%                 orientation = alpha - deltaAlphaBeta/2;
+%             else
+%             orientation = beta - deltaAlphaBeta/2;
+%             end
+%         end
+%     else
+%         orientation = alpha;
+%     end
+    
+
+% SOLUZIONE CORRETTA 
+% orientamento oggetto
+    if deltaAlphaBeta<45
+        orientation = (alpha+beta)/2;
+    else
+        orientation = alpha;
+    end
+    
+    
+    
+%     if or((lmax(1)+2) == lmax2(1),(lmax(1)-2) == lmax2(1))
+%         %if LRAP(object)<50 % da sosstituire con confronto alpha-beta <45°
+%         
+%         if or(or(and(lmax(1)==6,lmax2(1)==4),and(lmax(1)==4,lmax2(1)==6)),or(and(lmax(1)==8,lmax2(1)==2),and(lmax(1)==2,lmax2(1)==8))) % se i lati max adiacenti sono il 4/6 o 2/8 rifaso di 90
+%             deltaAlphaBeta = abs(abs(alpha)-abs(beta));
+%             if deltaAlphaBeta < 45
+%                 alpha = alpha + beta + 90;
+%             end
+%         else
+%             alpha = alpha + beta;
+%         end
+%     end
+    
+
+% STAMPA A VIDEO
+    
     % print alpha in degrees
-    printAlpha = 180-alpha; % inverto verso angolo (come trigonometria)
-    result = insertText(result, [bb(1,1)-15 bb(1,2)-30], printAlpha, 'BoxOpacity', 1, 'FontSize', 10, 'BoxColor', 'green');
+    printOrientation = 180-orientation; % inverto verso angolo (come trigonometria, senso antiorario)
+    result = insertText(result, [bb(1,1)-15 bb(1,2)-30], printOrientation, 'BoxOpacity', 1, 'FontSize', 10, 'BoxColor', 'green');
     
     % creo punti per "mirino"
     
-    x1 = bc(1,1)-lmax(2)/2*cosd(alpha);
-    y1 = bc(1,2)-lmax(2)/2*sind(alpha);
+    x1 = bc(1,1)-lmax(2)/2*cosd(orientation);
+    y1 = bc(1,2)-lmax(2)/2*sind(orientation);
     linepoint1 = [x1 y1];
-    x2 = bc(1,1)+lmax(2)/2*cosd(alpha);
-    y2 = bc(1,2)+lmax(2)/2*sind(alpha);
+    x2 = bc(1,1)+lmax(2)/2*cosd(orientation);
+    y2 = bc(1,2)+lmax(2)/2*sind(orientation);
     linepoint2 = [x2 y2];
-    x3 = bc(1,1)-lmax(2)/4*cosd(alpha+90);
-    y3 = bc(1,2)-lmax(2)/4*sind(alpha+90);
+    x3 = bc(1,1)-lmax(2)/4*cosd(orientation+90);
+    y3 = bc(1,2)-lmax(2)/4*sind(orientation+90);
     linepoint3 = [x3 y3];
-    x4 = bc(1,1)+lmax(2)/4*cosd(alpha+90);
-    y4 = bc(1,2)+lmax(2)/4*sind(alpha+90);
+    x4 = bc(1,1)+lmax(2)/4*cosd(orientation+90);
+    y4 = bc(1,2)+lmax(2)/4*sind(orientation+90);
     linepoint4 = [x4 y4];
     
     % print orientation cross
